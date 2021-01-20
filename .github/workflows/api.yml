@@ -2,7 +2,7 @@ name: Deployment EKS and RDS Aurora
 
 on:
   push:
-    # branches: ["master"] 
+    branches: [""] ## specify branch
 
 jobs:
   deploy:
