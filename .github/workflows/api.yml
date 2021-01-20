@@ -1,0 +1,48 @@
+name: Deployment EKS and RDS Aurora
+
+on:
+  push:
+    # branches: ["master"] 
+
+jobs:
+  deploy:
+    name: Deoloy API
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: "15"
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
+
+      - name: install packages
+        run: |
+          sudo curl -o /usr/bin/jq -L https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 && sudo chmod +x /usr/bin/jq
+          pip3 install awscli
+          
+      - name: Deployment
+        run: |
+          npm install -g aws-cdk
+          npm i
+          sh container_environment.sh
+          npm run build
+          cdk bootstrap aws://${AWS_ACCOUNT_ID}/${AWS_DEFAULT_REGION}
+          cdk deploy '*' --require-approval never
+        env:
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          APP_NAME: sample-app
+          RDS_DB_NAME: ${{ secrets.RDS_DB_NAME }}
+          RDS_USERNAME: ${{ secrets.RDS_USERNAME }}
+          RDS_PASSWORD: ${{ secrets.RDS_PASSWORD }}
+          OWNER: ${{ secrets.OWNER }}
+          REPO: ${{ secrets.REPO }}
+          OAUTH_TOKEN: ${{ secrets.OAUTH_TOKEN }}
+          ACM_CERTIFICATE_ARN: ${{ secrets.ACM_CERTIFICATE_ARN }}
+          MACKEREL_APIKEY: ${{ secrets.MACKEREL_APIKEY }}
+          BRANCH: master
+
